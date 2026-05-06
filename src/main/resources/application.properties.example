@@ -1,0 +1,25 @@
+# ── Server ────────────────────────────────────────────────────────────────────
+server.port=8080
+
+# ── Database ──────────────────────────────────────────────────────────────────
+spring.datasource.url=jdbc:postgresql://localhost:5433/koinonia_db
+spring.datasource.username=postgres
+spring.datasource.password=YOUR_DB_PASSWORD_HERE
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# ── JPA / Hibernate ───────────────────────────────────────────────────────────
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# ── Flyway ────────────────────────────────────────────────────────────────────
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
+
+# ── JWT ───────────────────────────────────────────────────────────────────────
+# Generate with: [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+# Must decode to >= 32 bytes (256 bits for HS256).
+jwt.secret=YOUR_JWT_SECRET_HERE
+# 86400000 ms = 24 hours
+jwt.expiration-ms=86400000

@@ -25,6 +25,8 @@ spring.log
 # Environment / secrets
 .env
 .env.*
+*.env
+application.properties
 application-local.properties
 application-local.yml
 application-secret.properties
