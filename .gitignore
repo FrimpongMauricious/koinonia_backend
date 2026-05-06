@@ -1,0 +1,44 @@
+# Compiled output
+target/
+*.class
+
+# Maven
+.mvn/repository
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE files
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+*.launch
+.settings/
+.project
+.classpath
+
+# Spring Boot
+*.log
+*.log.*
+spring.log
+
+# Environment / secrets
+.env
+.env.*
+application-local.properties
+application-local.yml
+application-secret.properties
+application-secret.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+*.pid
+
+# Package files
+*.jar
+*.war
+*.ear
