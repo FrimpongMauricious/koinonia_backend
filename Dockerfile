@@ -33,11 +33,12 @@ USER spring
 EXPOSE 8080
 
 # JVM flags explained:
-#   -XX:MaxRAMPercentage=75.0          use up to 75% of the container memory limit for the heap
-#   -Djava.security.egd=...urandom     avoid blocking /dev/random on Linux; faster startup
-#   -Dspring.profiles.active=...       default to prod profile; override via SPRING_PROFILES_ACTIVE env var
+#   -XX:MaxRAMPercentage=75.0      use up to 75% of the container memory limit for the heap
+#   -Djava.security.egd=...urandom avoid blocking /dev/random on Linux; faster startup
+# Spring profile is controlled by the SPRING_PROFILES_ACTIVE environment variable,
+# which Spring Boot reads natively — no -D flag needed (and exec-form ENTRYPOINT
+# has no shell to expand ${...} syntax anyway).
 ENTRYPOINT ["java", \
   "-XX:MaxRAMPercentage=75.0", \
   "-Djava.security.egd=file:/dev/./urandom", \
-  "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod}", \
   "-jar", "/app/app.jar"]
