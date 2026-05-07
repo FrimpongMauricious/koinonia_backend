@@ -1,21 +1,19 @@
 # ── Stage 1: build ────────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-jammy AS builder
+# Use the official Maven image so we don't rely on the Maven Wrapper script,
+# which has a path-extraction bug on Linux containers.
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /workspace
 
-RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
-
-# Copy the Maven wrapper and POM first so dependency resolution is cached as its
-# own layer. Docker only re-runs this layer when pom.xml or the wrapper changes,
-# not on every source edit.
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+# Copy POM first so dependency resolution is cached as its own layer.
+# Docker only re-runs this layer when pom.xml changes, not on every source edit.
+COPY pom.xml ./
+RUN mvn dependency:go-offline -B
 
 # Now copy source and build. -DskipTests because tests require a live Postgres
 # database which is not available during image build.
 COPY src/ src/
-RUN ./mvnw package -DskipTests -B
+RUN mvn package -DskipTests -B
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-jammy AS runtime
