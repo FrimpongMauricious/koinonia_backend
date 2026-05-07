@@ -1,0 +1,24 @@
+# Build output — rebuilt inside the container, no need to send to daemon
+target/
+
+# Version control
+.git/
+.gitignore
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Node (not used here, but belt-and-suspenders for any future tooling)
+node_modules/
+
+# Local environment and secrets — never leak these into an image
+.env
+.env.*
+src/main/resources/application.properties
+
+# Docs — not needed at runtime
+README.md

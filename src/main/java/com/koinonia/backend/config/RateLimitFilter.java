@@ -89,10 +89,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         response.getWriter().write(objectMapper.writeValueAsString(error));
     }
 
+    // Resolution chain (in order):
+    // 1. X-Forwarded-For — standard proxy header; may be a comma-separated list
+    //    of IPs appended by each hop; the first entry is the original client.
+    // 2. X-Real-IP — single-IP header set by some Nginx configurations instead of
+    //    (or in addition to) X-Forwarded-For.
+    // 3. request.getRemoteAddr() — the TCP peer address; correct only when the
+    //    app is not behind a proxy (local dev without a reverse proxy in front).
     private String clientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
             return forwarded.split(",")[0].trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
         }
         return request.getRemoteAddr();
     }
