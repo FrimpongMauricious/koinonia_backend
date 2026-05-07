@@ -42,7 +42,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,
                         "/api/v1/posts",
                         "/api/v1/posts/**",
-                        "/api/v1/users/*/posts").permitAll()
+                        "/api/v1/users/*/posts",
+                        "/api/v1/users/*/followers",
+                        "/api/v1/users/*/following").permitAll()
                 .anyRequest().authenticated()
             )
             // Run our JWT filter before Spring's form-login filter

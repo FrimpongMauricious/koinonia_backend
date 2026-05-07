@@ -1,9 +1,11 @@
 // Centralises error responses so no controller leaks stack traces or raw Spring error pages.
 package com.koinonia.backend.exception;
 
+import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.CommentNotFoundException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -76,6 +78,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<ApiError> handlePostNotFound(PostNotFoundException ex,
+                                                       HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex,
+                                                     HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiError> handleUserNotFound(UserNotFoundException ex,
                                                        HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.builder()
                 .timestamp(LocalDateTime.now())
