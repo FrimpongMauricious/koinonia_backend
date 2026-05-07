@@ -3,6 +3,8 @@ FROM eclipse-temurin:21-jdk-jammy AS builder
 
 WORKDIR /workspace
 
+RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
+
 # Copy the Maven wrapper and POM first so dependency resolution is cached as its
 # own layer. Docker only re-runs this layer when pom.xml or the wrapper changes,
 # not on every source edit.
