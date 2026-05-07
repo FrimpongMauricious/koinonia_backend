@@ -49,9 +49,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                // /me must be authenticated — declared first so it takes priority over /users/*
+                .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
                 .requestMatchers(HttpMethod.GET,
                         "/api/v1/posts",
                         "/api/v1/posts/**",
+                        "/api/v1/users/*",
                         "/api/v1/users/*/posts",
                         "/api/v1/users/*/followers",
                         "/api/v1/users/*/following").permitAll()
