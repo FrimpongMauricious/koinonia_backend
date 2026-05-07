@@ -19,6 +19,9 @@ public class PostResponse {
     private long likeCount;
     private long commentCount;
     private boolean likedByCurrentUser;
+    private long repostCount;
+    private boolean repostedByCurrentUser;
+    private boolean favoritedByCurrentUser;
 
     @Getter
     @Builder
@@ -29,7 +32,13 @@ public class PostResponse {
         private String profilePictureUrl;
     }
 
-    public static PostResponse from(Post post, long likeCount, long commentCount, boolean likedByCurrentUser) {
+    public static PostResponse from(Post post,
+                                    long likeCount,
+                                    long commentCount,
+                                    boolean likedByCurrentUser,
+                                    long repostCount,
+                                    boolean repostedByCurrentUser,
+                                    boolean favoritedByCurrentUser) {
         User u = post.getUser();
         return PostResponse.builder()
                 .id(post.getId())
@@ -45,6 +54,9 @@ public class PostResponse {
                 .likeCount(likeCount)
                 .commentCount(commentCount)
                 .likedByCurrentUser(likedByCurrentUser)
+                .repostCount(repostCount)
+                .repostedByCurrentUser(repostedByCurrentUser)
+                .favoritedByCurrentUser(favoritedByCurrentUser)
                 .build();
     }
 }

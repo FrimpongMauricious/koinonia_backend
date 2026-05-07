@@ -3,10 +3,12 @@ package com.koinonia.backend.post;
 import com.koinonia.backend.comment.CommentRepository;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.favorite.FavoriteRepository;
 import com.koinonia.backend.like.PostLikeRepository;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.post.dto.PostResponse;
 import com.koinonia.backend.post.dto.UpdatePostRequest;
+import com.koinonia.backend.repost.RepostRepository;
 import com.koinonia.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+    private final RepostRepository repostRepository;
+    private final FavoriteRepository favoriteRepository;
 
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Authentication authentication) {
@@ -37,8 +41,7 @@ public class PostService {
                 .user(currentUser)
                 .content(request.getContent())
                 .build();
-        // Newly created post always has 0 likes and 0 comments
-        return PostResponse.from(postRepository.save(post), 0L, 0L, false);
+        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false);
     }
 
     @Transactional(readOnly = true)
@@ -84,6 +87,12 @@ public class PostService {
         postRepository.delete(post);
     }
 
+    // ── public enrichment API (used by RepostService and FavoriteService) ────────
+
+    public List<PostResponse> enrichPosts(List<Post> posts) {
+        return toResponses(posts);
+    }
+
     // ── private enrichment helpers ────────────────────────────────────────────
 
     private PostResponse toResponse(Post post) {
@@ -102,15 +111,29 @@ public class PostService {
         Map<Long, Long> commentCounts = commentRepository.countByPostIds(ids).stream()
                 .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
 
+        Map<Long, Long> repostCounts = repostRepository.countByPostIds(ids).stream()
+                .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+
         Set<Long> likedIds = currentUser != null
                 ? postLikeRepository.findLikedPostIds(currentUser.getId(), ids)
+                : Set.of();
+
+        Set<Long> repostedIds = currentUser != null
+                ? repostRepository.findRepostedPostIds(currentUser.getId(), ids)
+                : Set.of();
+
+        Set<Long> favoritedIds = currentUser != null
+                ? favoriteRepository.findFavoritedPostIds(currentUser.getId(), ids)
                 : Set.of();
 
         return posts.stream()
                 .map(p -> PostResponse.from(p,
                         likeCounts.getOrDefault(p.getId(), 0L),
                         commentCounts.getOrDefault(p.getId(), 0L),
-                        likedIds.contains(p.getId())))
+                        likedIds.contains(p.getId()),
+                        repostCounts.getOrDefault(p.getId(), 0L),
+                        repostedIds.contains(p.getId()),
+                        favoritedIds.contains(p.getId())))
                 .toList();
     }
 
