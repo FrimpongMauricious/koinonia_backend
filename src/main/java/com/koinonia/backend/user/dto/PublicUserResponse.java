@@ -1,0 +1,25 @@
+package com.koinonia.backend.user.dto;
+
+import com.koinonia.backend.user.User;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class PublicUserResponse {
+    private Long id;
+    private String username;
+    private String displayName;
+    private String bio;
+    private String profilePictureUrl;
+
+    public static PublicUserResponse from(User user) {
+        return PublicUserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .displayName(user.getDisplayName())
+                .bio(user.getBio())
+                .profilePictureUrl(user.getProfilePictureUrl())
+                .build();
+    }
+}

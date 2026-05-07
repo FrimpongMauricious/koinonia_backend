@@ -2,7 +2,7 @@ package com.koinonia.backend.follow;
 
 import com.koinonia.backend.follow.dto.FollowResponse;
 import com.koinonia.backend.user.User;
-import com.koinonia.backend.user.dto.UserResponse;
+import com.koinonia.backend.user.dto.PublicUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,14 +28,14 @@ public class FollowController {
     }
 
     @GetMapping("/{userId}/followers")
-    public Page<UserResponse> getFollowers(
+    public Page<PublicUserResponse> getFollowers(
             @PathVariable Long userId,
             @PageableDefault(size = 50) Pageable pageable) {
         return followService.getFollowers(userId, pageable);
     }
 
     @GetMapping("/{userId}/following")
-    public Page<UserResponse> getFollowing(
+    public Page<PublicUserResponse> getFollowing(
             @PathVariable Long userId,
             @PageableDefault(size = 50) Pageable pageable) {
         return followService.getFollowing(userId, pageable);

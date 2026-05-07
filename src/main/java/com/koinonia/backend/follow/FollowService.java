@@ -5,7 +5,7 @@ import com.koinonia.backend.exception.UserNotFoundException;
 import com.koinonia.backend.follow.dto.FollowResponse;
 import com.koinonia.backend.user.User;
 import com.koinonia.backend.user.UserRepository;
-import com.koinonia.backend.user.dto.UserResponse;
+import com.koinonia.backend.user.dto.PublicUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,21 +45,21 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponse> getFollowers(Long userId, Pageable pageable) {
+    public Page<PublicUserResponse> getFollowers(Long userId, Pageable pageable) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException(userId);
         }
         return followRepository.findByFollowingId(userId, pageable)
-                .map(f -> UserResponse.from(f.getFollower()));
+                .map(f -> PublicUserResponse.from(f.getFollower()));
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponse> getFollowing(Long userId, Pageable pageable) {
+    public Page<PublicUserResponse> getFollowing(Long userId, Pageable pageable) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException(userId);
         }
         return followRepository.findByFollowerId(userId, pageable)
-                .map(f -> UserResponse.from(f.getFollowing()));
+                .map(f -> PublicUserResponse.from(f.getFollowing()));
     }
 
     // ── private helpers ───────────────────────────────────────────────────────

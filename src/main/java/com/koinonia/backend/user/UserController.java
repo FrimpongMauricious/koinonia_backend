@@ -1,8 +1,11 @@
 package com.koinonia.backend.user;
 
-import com.koinonia.backend.follow.FollowRepository;
+import com.koinonia.backend.user.dto.DeleteAccountRequest;
+import com.koinonia.backend.user.dto.UpdateProfileRequest;
 import com.koinonia.backend.user.dto.UserProfileResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,14 +14,23 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final FollowRepository followRepository;
+    private final UserService userService;
 
     @GetMapping("/me")
     public UserProfileResponse me(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        long followerCount  = followRepository.countByFollowingId(user.getId());
-        long followingCount = followRepository.countByFollowerId(user.getId());
-        // followedByCurrentUser is always false for /me — you cannot follow yourself
-        return UserProfileResponse.from(user, followerCount, followingCount, false);
+        return userService.getProfile((User) authentication.getPrincipal());
+    }
+
+    @PutMapping("/me")
+    public UserProfileResponse updateProfile(@Valid @RequestBody UpdateProfileRequest request,
+                                             Authentication authentication) {
+        return userService.updateProfile((User) authentication.getPrincipal(), request);
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAccount(@Valid @RequestBody DeleteAccountRequest request,
+                              Authentication authentication) {
+        userService.deleteAccount((User) authentication.getPrincipal(), request);
     }
 }
