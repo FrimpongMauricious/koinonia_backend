@@ -1,6 +1,6 @@
-package com.koinonia.backend.post.dto;
+package com.koinonia.backend.comment.dto;
 
-import com.koinonia.backend.post.Post;
+import com.koinonia.backend.comment.Comment;
 import com.koinonia.backend.user.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,16 +9,13 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class PostResponse {
+public class CommentResponse {
 
     private Long id;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private AuthorDto author;
-    private long likeCount;
-    private long commentCount;
-    private boolean likedByCurrentUser;
 
     @Getter
     @Builder
@@ -29,22 +26,19 @@ public class PostResponse {
         private String profilePictureUrl;
     }
 
-    public static PostResponse from(Post post, long likeCount, long commentCount, boolean likedByCurrentUser) {
-        User u = post.getUser();
-        return PostResponse.builder()
-                .id(post.getId())
-                .content(post.getContent())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
+    public static CommentResponse from(Comment comment) {
+        User u = comment.getUser();
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
                 .author(AuthorDto.builder()
                         .id(u.getId())
                         .username(u.getUsername())
                         .displayName(u.getDisplayName())
                         .profilePictureUrl(u.getProfilePictureUrl())
                         .build())
-                .likeCount(likeCount)
-                .commentCount(commentCount)
-                .likedByCurrentUser(likedByCurrentUser)
                 .build();
     }
 }

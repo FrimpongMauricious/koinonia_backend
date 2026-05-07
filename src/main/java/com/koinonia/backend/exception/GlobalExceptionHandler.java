@@ -1,6 +1,7 @@
 // Centralises error responses so no controller leaks stack traces or raw Spring error pages.
 package com.koinonia.backend.exception;
 
+import com.koinonia.backend.exception.CommentNotFoundException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,6 +77,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<ApiError> handlePostNotFound(PostNotFoundException ex,
                                                        HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build());
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ApiError> handleCommentNotFound(CommentNotFoundException ex,
+                                                          HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
