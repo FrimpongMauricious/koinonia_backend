@@ -30,6 +30,7 @@ public class PostResponse {
         private String username;
         private String displayName;
         private String profilePictureUrl;
+        private boolean followedByCurrentUser;
     }
 
     public static PostResponse from(Post post,
@@ -38,7 +39,8 @@ public class PostResponse {
                                     boolean likedByCurrentUser,
                                     long repostCount,
                                     boolean repostedByCurrentUser,
-                                    boolean favoritedByCurrentUser) {
+                                    boolean favoritedByCurrentUser,
+                                    boolean authorFollowedByCurrentUser) {
         User u = post.getUser();
         return PostResponse.builder()
                 .id(post.getId())
@@ -50,6 +52,7 @@ public class PostResponse {
                         .username(u.getUsername())
                         .displayName(u.getDisplayName())
                         .profilePictureUrl(u.getProfilePictureUrl())
+                        .followedByCurrentUser(authorFollowedByCurrentUser)
                         .build())
                 .likeCount(likeCount)
                 .commentCount(commentCount)

@@ -24,9 +24,14 @@ public class CommentResponse {
         private String username;
         private String displayName;
         private String profilePictureUrl;
+        private boolean followedByCurrentUser;
     }
 
     public static CommentResponse from(Comment comment) {
+        return from(comment, false);
+    }
+
+    public static CommentResponse from(Comment comment, boolean authorFollowedByCurrentUser) {
         User u = comment.getUser();
         return CommentResponse.builder()
                 .id(comment.getId())
@@ -38,6 +43,7 @@ public class CommentResponse {
                         .username(u.getUsername())
                         .displayName(u.getDisplayName())
                         .profilePictureUrl(u.getProfilePictureUrl())
+                        .followedByCurrentUser(authorFollowedByCurrentUser)
                         .build())
                 .build();
     }

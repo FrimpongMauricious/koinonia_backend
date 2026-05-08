@@ -4,6 +4,7 @@ import com.koinonia.backend.comment.CommentRepository;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
 import com.koinonia.backend.favorite.FavoriteRepository;
+import com.koinonia.backend.follow.FollowRepository;
 import com.koinonia.backend.like.PostLikeRepository;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.post.dto.PostResponse;
@@ -33,6 +34,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final RepostRepository repostRepository;
     private final FavoriteRepository favoriteRepository;
+    private final FollowRepository followRepository;
 
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Authentication authentication) {
@@ -41,7 +43,7 @@ public class PostService {
                 .user(currentUser)
                 .content(request.getContent())
                 .build();
-        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false);
+        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, false);
     }
 
     @Transactional(readOnly = true)
@@ -126,6 +128,22 @@ public class PostService {
                 ? favoriteRepository.findFavoritedPostIds(currentUser.getId(), ids)
                 : Set.of();
 
+        Set<Long> authorIds = posts.stream()
+                .map(p -> p.getUser().getId())
+                .collect(Collectors.toSet());
+
+        Set<Long> followedAuthorIds;
+        if (currentUser != null) {
+            Set<Long> otherAuthorIds = authorIds.stream()
+                    .filter(id -> !id.equals(currentUser.getId()))
+                    .collect(Collectors.toSet());
+            followedAuthorIds = otherAuthorIds.isEmpty()
+                    ? Set.of()
+                    : followRepository.findFollowedAuthorIds(currentUser.getId(), otherAuthorIds);
+        } else {
+            followedAuthorIds = Set.of();
+        }
+
         return posts.stream()
                 .map(p -> PostResponse.from(p,
                         likeCounts.getOrDefault(p.getId(), 0L),
@@ -133,7 +151,8 @@ public class PostService {
                         likedIds.contains(p.getId()),
                         repostCounts.getOrDefault(p.getId(), 0L),
                         repostedIds.contains(p.getId()),
-                        favoritedIds.contains(p.getId())))
+                        favoritedIds.contains(p.getId()),
+                        followedAuthorIds.contains(p.getUser().getId())))
                 .toList();
     }
 

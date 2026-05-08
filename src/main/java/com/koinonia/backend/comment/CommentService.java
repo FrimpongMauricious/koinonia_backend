@@ -6,13 +6,18 @@ import com.koinonia.backend.comment.dto.UpdateCommentRequest;
 import com.koinonia.backend.exception.CommentNotFoundException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.follow.FollowRepository;
 import com.koinonia.backend.post.PostRepository;
 import com.koinonia.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final FollowRepository followRepository;
 
     @Transactional
     public CommentResponse createComment(Long postId, CreateCommentRequest request, User currentUser) {
@@ -38,7 +44,35 @@ public class CommentService {
         if (!postRepository.existsById(postId)) {
             throw new PostNotFoundException(postId);
         }
-        return commentRepository.findByPostId(postId, pageable).map(CommentResponse::from);
+        Page<Comment> page = commentRepository.findByPostId(postId, pageable);
+
+        User currentUser = getCurrentUser();
+
+        Set<Long> authorIds = page.getContent().stream()
+                .map(c -> c.getUser().getId())
+                .collect(Collectors.toSet());
+
+        Set<Long> followedAuthorIds;
+        if (currentUser != null && !authorIds.isEmpty()) {
+            Set<Long> otherAuthorIds = authorIds.stream()
+                    .filter(id -> !id.equals(currentUser.getId()))
+                    .collect(Collectors.toSet());
+            followedAuthorIds = otherAuthorIds.isEmpty()
+                    ? Set.of()
+                    : followRepository.findFollowedAuthorIds(currentUser.getId(), otherAuthorIds);
+        } else {
+            followedAuthorIds = Set.of();
+        }
+
+        return page.map(c -> CommentResponse.from(c, followedAuthorIds.contains(c.getUser().getId())));
+    }
+
+    private User getCurrentUser() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof User u) {
+            return u;
+        }
+        return null;
     }
 
     @Transactional
