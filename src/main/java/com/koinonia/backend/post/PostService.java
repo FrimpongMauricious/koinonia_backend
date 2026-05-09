@@ -56,7 +56,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Post findById(Long id) {
-        return postRepository.findById(id)
+        return postRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
     }
 

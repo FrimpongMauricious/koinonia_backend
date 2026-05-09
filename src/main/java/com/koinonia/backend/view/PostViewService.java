@@ -17,15 +17,15 @@ public class PostViewService {
     @Transactional
     public void recordView(User viewer, Post post) {
         if (viewer == null) return;
-        Long viewerId = viewer.getId();
-        Long postId = post.getId();
-        Long authorId = post.getUser().getId(); // proxy ID — safe without open session
-        if (viewerId.equals(authorId)) return;
-        if (postViewRepository.existsByUserIdAndPostId(viewerId, postId)) return;
         try {
+            Long viewerId = viewer.getId();
+            Long postId = post.getId();
+            Long authorId = post.getUser().getId();
+            if (viewerId.equals(authorId)) return;
+            if (postViewRepository.existsByUserIdAndPostId(viewerId, postId)) return;
             postViewRepository.insertById(viewerId, postId);
         } catch (Exception e) {
-            log.warn("Failed to record view for user {} on post {}: {}", viewerId, postId, e.getMessage());
+            log.warn("Failed to record view for post {} viewer {}: {}", post.getId(), viewer.getId(), e.getMessage());
         }
     }
 }
