@@ -7,6 +7,7 @@ import com.koinonia.backend.exception.CommentNotFoundException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
 import com.koinonia.backend.follow.FollowRepository;
+import com.koinonia.backend.notification.NotificationService;
 import com.koinonia.backend.post.PostRepository;
 import com.koinonia.backend.user.User;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final FollowRepository followRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public CommentResponse createComment(Long postId, CreateCommentRequest request, User currentUser) {
@@ -36,7 +38,9 @@ public class CommentService {
                 .post(post)
                 .content(request.getContent())
                 .build();
-        return CommentResponse.from(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        notificationService.emitComment(currentUser, post.getUser(), post, savedComment);
+        return CommentResponse.from(savedComment);
     }
 
     @Transactional(readOnly = true)

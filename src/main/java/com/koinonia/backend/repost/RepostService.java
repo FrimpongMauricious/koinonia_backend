@@ -2,6 +2,7 @@ package com.koinonia.backend.repost;
 
 import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.notification.NotificationService;
 import com.koinonia.backend.post.Post;
 import com.koinonia.backend.post.PostRepository;
 import com.koinonia.backend.post.PostService;
@@ -20,6 +21,7 @@ public class RepostService {
     private final RepostRepository repostRepository;
     private final PostRepository postRepository;
     private final PostService postService;
+    private final NotificationService notificationService;
 
     @Transactional
     public PostResponse repost(User currentUser, Long postId) {
@@ -35,6 +37,7 @@ public class RepostService {
                     .user(currentUser)
                     .post(post)
                     .build());
+            notificationService.emitRepost(currentUser, post.getUser(), post);
         }
 
         return postService.enrichPosts(List.of(post)).get(0);

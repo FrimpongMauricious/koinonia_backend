@@ -3,6 +3,7 @@ package com.koinonia.backend.follow;
 import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.UserNotFoundException;
 import com.koinonia.backend.follow.dto.FollowResponse;
+import com.koinonia.backend.notification.NotificationService;
 import com.koinonia.backend.user.User;
 import com.koinonia.backend.user.UserRepository;
 import com.koinonia.backend.user.dto.PublicUserResponse;
@@ -18,6 +19,7 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public FollowResponse follow(User currentUser, Long targetUserId) {
@@ -31,6 +33,7 @@ public class FollowService {
                     .follower(currentUser)
                     .following(target)
                     .build());
+            notificationService.emitFollow(currentUser, target);
         }
         return buildFollowResponse(target, currentUser);
     }

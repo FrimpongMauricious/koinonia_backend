@@ -1,6 +1,7 @@
 package com.koinonia.backend.like;
 
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.notification.NotificationService;
 import com.koinonia.backend.post.Post;
 import com.koinonia.backend.post.PostRepository;
 import com.koinonia.backend.user.User;
@@ -14,6 +15,7 @@ public class PostLikeService {
 
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public LikeResponse likePost(Long postId, User currentUser) {
@@ -24,6 +26,7 @@ public class PostLikeService {
                     .user(currentUser)
                     .post(post)
                     .build());
+            notificationService.emitLike(currentUser, post.getUser(), post);
         }
         return new LikeResponse(postLikeRepository.countByPostId(postId), true);
     }
