@@ -6,6 +6,7 @@ import com.koinonia.backend.exception.PostNotFoundException;
 import com.koinonia.backend.favorite.FavoriteRepository;
 import com.koinonia.backend.follow.FollowRepository;
 import com.koinonia.backend.like.PostLikeRepository;
+import com.koinonia.backend.view.PostViewRepository;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.post.dto.PostResponse;
 import com.koinonia.backend.post.dto.UpdatePostRequest;
@@ -35,6 +36,7 @@ public class PostService {
     private final RepostRepository repostRepository;
     private final FavoriteRepository favoriteRepository;
     private final FollowRepository followRepository;
+    private final PostViewRepository postViewRepository;
 
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Authentication authentication) {
@@ -43,7 +45,7 @@ public class PostService {
                 .user(currentUser)
                 .content(request.getContent())
                 .build();
-        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, false);
+        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, false, 0L);
     }
 
     @Transactional(readOnly = true)
@@ -53,10 +55,9 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponse getPostById(Long id) {
-        Post post = postRepository.findById(id)
+    public Post findById(Long id) {
+        return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
-        return toResponse(post);
     }
 
     @Transactional(readOnly = true)
@@ -95,9 +96,10 @@ public class PostService {
         return toResponses(posts);
     }
 
-    // ── private enrichment helpers ────────────────────────────────────────────
+    // ── enrichment helpers ────────────────────────────────────────────────────
 
-    private PostResponse toResponse(Post post) {
+    @Transactional(readOnly = true)
+    public PostResponse toResponse(Post post) {
         return toResponses(List.of(post)).get(0);
     }
 
@@ -144,6 +146,9 @@ public class PostService {
             followedAuthorIds = Set.of();
         }
 
+        Map<Long, Long> viewCounts = postViewRepository.countByPostIdIn(ids).stream()
+                .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+
         return posts.stream()
                 .map(p -> PostResponse.from(p,
                         likeCounts.getOrDefault(p.getId(), 0L),
@@ -152,7 +157,8 @@ public class PostService {
                         repostCounts.getOrDefault(p.getId(), 0L),
                         repostedIds.contains(p.getId()),
                         favoritedIds.contains(p.getId()),
-                        followedAuthorIds.contains(p.getUser().getId())))
+                        followedAuthorIds.contains(p.getUser().getId()),
+                        viewCounts.getOrDefault(p.getId(), 0L)))
                 .toList();
     }
 

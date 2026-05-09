@@ -1,7 +1,5 @@
 package com.koinonia.backend.user;
 
-import com.koinonia.backend.exception.UserNotFoundException;
-import com.koinonia.backend.follow.FollowRepository;
 import com.koinonia.backend.user.dto.DeleteAccountRequest;
 import com.koinonia.backend.user.dto.PublicUserProfileResponse;
 import com.koinonia.backend.user.dto.UpdateProfileRequest;
@@ -19,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final FollowRepository followRepository;
 
     @GetMapping("/me")
     public UserProfileResponse me(Authentication authentication) {
@@ -44,17 +40,6 @@ public class UserController {
     public PublicUserProfileResponse getPublicProfile(
             @PathVariable Long userId,
             @AuthenticationPrincipal(errorOnInvalidType = false) User currentUser) {
-
-        User target = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-
-        long followerCount  = followRepository.countByFollowingId(userId);
-        long followingCount = followRepository.countByFollowerId(userId);
-
-        boolean followedByCurrentUser = currentUser != null
-                && !currentUser.getId().equals(userId)
-                && followRepository.existsByFollowerIdAndFollowingId(currentUser.getId(), userId);
-
-        return PublicUserProfileResponse.from(target, followerCount, followingCount, followedByCurrentUser);
+        return userService.getPublicProfile(userId, currentUser);
     }
 }

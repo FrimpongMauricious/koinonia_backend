@@ -22,6 +22,7 @@ public class PostResponse {
     private long repostCount;
     private boolean repostedByCurrentUser;
     private boolean favoritedByCurrentUser;
+    private long viewCount;
 
     @Getter
     @Builder
@@ -40,7 +41,8 @@ public class PostResponse {
                                     long repostCount,
                                     boolean repostedByCurrentUser,
                                     boolean favoritedByCurrentUser,
-                                    boolean authorFollowedByCurrentUser) {
+                                    boolean authorFollowedByCurrentUser,
+                                    long viewCount) {
         User u = post.getUser();
         return PostResponse.builder()
                 .id(post.getId())
@@ -60,6 +62,7 @@ public class PostResponse {
                 .repostCount(repostCount)
                 .repostedByCurrentUser(repostedByCurrentUser)
                 .favoritedByCurrentUser(favoritedByCurrentUser)
+                .viewCount(viewCount)
                 .build();
     }
 }

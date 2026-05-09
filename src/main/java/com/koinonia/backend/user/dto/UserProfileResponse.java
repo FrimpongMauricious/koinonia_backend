@@ -19,11 +19,13 @@ public class UserProfileResponse {
     private long followerCount;
     private long followingCount;
     private boolean followedByCurrentUser;
+    private long totalLikes;
 
     public static UserProfileResponse from(User user,
                                            long followerCount,
                                            long followingCount,
-                                           boolean followedByCurrentUser) {
+                                           boolean followedByCurrentUser,
+                                           long totalLikes) {
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -35,6 +37,7 @@ public class UserProfileResponse {
                 .followerCount(followerCount)
                 .followingCount(followingCount)
                 .followedByCurrentUser(followedByCurrentUser)
+                .totalLikes(totalLikes)
                 .build();
     }
 }
