@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +76,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PublicUserProfileResponse> searchUsers(String q, User currentUser) {
-        List<User> users = userRepository.searchByUsername(q, PageRequest.of(0, 20));
+    public Page<PublicUserProfileResponse> searchUsers(String query, User currentUser) {
+        Page<User> userPage = userRepository.searchByUsernameOrDisplayName(query, PageRequest.of(0, 20));
+        List<User> users = userPage.getContent();
         if (users.isEmpty()) return Page.empty();
 
         List<Long> userIds = users.stream().map(User::getId).toList();
@@ -93,8 +93,7 @@ public class UserService {
                 ? followRepository.findFollowedAuthorIds(currentUser.getId(), new HashSet<>(userIds))
                 : Set.of();
 
-        List<PublicUserProfileResponse> sorted = users.stream()
-                .sorted(Comparator.comparingLong((User u) -> followerCounts.getOrDefault(u.getId(), 0L)).reversed())
+        List<PublicUserProfileResponse> responses = users.stream()
                 .map(u -> PublicUserProfileResponse.from(u,
                         followerCounts.getOrDefault(u.getId(), 0L),
                         followingCounts.getOrDefault(u.getId(), 0L),
@@ -102,7 +101,7 @@ public class UserService {
                         likeCounts.getOrDefault(u.getId(), 0L)))
                 .toList();
 
-        return new PageImpl<>(sorted, PageRequest.of(0, 20), sorted.size());
+        return new PageImpl<>(responses, PageRequest.of(0, 20), userPage.getTotalElements());
     }
 
     @Transactional

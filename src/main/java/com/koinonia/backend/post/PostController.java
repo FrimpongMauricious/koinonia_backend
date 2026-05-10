@@ -41,7 +41,7 @@ public class PostController {
         return postService.getFeed(pageable, topic);
     }
 
-    @GetMapping("/posts/topics")
+    @GetMapping("/topics")
     public List<TopicCountResponse> getTopics() {
         return postService.getTopicCounts();
     }

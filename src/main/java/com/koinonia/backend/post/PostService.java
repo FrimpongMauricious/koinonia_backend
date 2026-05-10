@@ -1,6 +1,7 @@
 package com.koinonia.backend.post;
 
 import com.koinonia.backend.comment.CommentRepository;
+import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
 import com.koinonia.backend.favorite.FavoriteRepository;
@@ -43,6 +44,9 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Authentication authentication) {
+        if (request.getTopic() == Topic.GENERAL) {
+            throw new BadRequestException("Topic cannot be GENERAL");
+        }
         User currentUser = (User) authentication.getPrincipal();
         Post post = Post.builder()
                 .user(currentUser)
@@ -85,6 +89,9 @@ public class PostService {
 
     @Transactional
     public PostResponse updatePost(Long id, UpdatePostRequest request, Authentication authentication) {
+        if (request.getTopic() == Topic.GENERAL) {
+            throw new BadRequestException("Topic cannot be GENERAL");
+        }
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
         User currentUser = (User) authentication.getPrincipal();

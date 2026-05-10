@@ -39,9 +39,9 @@ public class UserController {
 
     @GetMapping("/search")
     public Page<PublicUserProfileResponse> searchUsers(
-            @RequestParam String q,
+            @RequestParam String query,
             @AuthenticationPrincipal(errorOnInvalidType = false) User currentUser) {
-        return userService.searchUsers(q, currentUser);
+        return userService.searchUsers(query, currentUser);
     }
 
     @GetMapping("/{userId}")

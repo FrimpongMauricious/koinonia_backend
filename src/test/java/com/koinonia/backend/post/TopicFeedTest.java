@@ -49,7 +49,7 @@ class TopicFeedTest {
                 .andExpect(jsonPath("$.totalElements").value(3));
 
         // Topics endpoint → FAITH is the top topic with count 2
-        mockMvc.perform(get("/api/v1/posts/topics"))
+        mockMvc.perform(get("/api/v1/topics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].topic").value("FAITH"))
                 .andExpect(jsonPath("$[0].postCount").value(2));

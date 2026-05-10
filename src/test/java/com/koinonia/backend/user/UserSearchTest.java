@@ -36,30 +36,30 @@ class UserSearchTest {
                 .andExpect(status().isOk());
 
         // Partial match: "search" returns both users
-        mockMvc.perform(get("/api/v1/users/search?q=search"))
+        mockMvc.perform(get("/api/v1/users/search?query=search"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(2)));
 
         // Precise match: "alpha" returns only A
-        mockMvc.perform(get("/api/v1/users/search?q=alpha"))
+        mockMvc.perform(get("/api/v1/users/search?query=alpha"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username").value("searchAlpha"));
 
-        // Ordered by follower count descending: A (1 follower) should be first
-        mockMvc.perform(get("/api/v1/users/search?q=search")
+        // Ordered by createdAt ASC: A (registered first) should be first
+        mockMvc.perform(get("/api/v1/users/search?query=search")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].username").value("searchAlpha"))
                 .andExpect(jsonPath("$.content[0].followerCount").value(1));
 
         // Anonymous search works too
-        mockMvc.perform(get("/api/v1/users/search?q=search"))
+        mockMvc.perform(get("/api/v1/users/search?query=search"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].followedByCurrentUser").value(false));
 
         // No results
-        mockMvc.perform(get("/api/v1/users/search?q=nonexistent"))
+        mockMvc.perform(get("/api/v1/users/search?query=nonexistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(0)));
     }
