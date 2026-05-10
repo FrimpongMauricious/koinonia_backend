@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,4 +25,7 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.post.user.id = :userId")
     long countByPostAuthorId(@Param("userId") Long userId);
+
+    @Query("SELECT pl.post.user.id, COUNT(pl) FROM PostLike pl WHERE pl.post.user.id IN :userIds GROUP BY pl.post.user.id")
+    List<Object[]> countLikesByAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

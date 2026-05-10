@@ -2,6 +2,7 @@ package com.koinonia.backend.post;
 
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.post.dto.PostResponse;
+import com.koinonia.backend.post.dto.TopicCountResponse;
 import com.koinonia.backend.post.dto.UpdatePostRequest;
 import com.koinonia.backend.user.User;
 import com.koinonia.backend.view.PostViewService;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -33,8 +36,14 @@ public class PostController {
 
     @GetMapping("/posts")
     public Page<PostResponse> getFeed(
+            @RequestParam(required = false) Topic topic,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return postService.getFeed(pageable);
+        return postService.getFeed(pageable, topic);
+    }
+
+    @GetMapping("/posts/topics")
+    public List<TopicCountResponse> getTopics() {
+        return postService.getTopicCounts();
     }
 
     @GetMapping("/posts/{id}")

@@ -1,4 +1,4 @@
-package com.koinonia.backend.post;
+package com.koinonia.backend.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koinonia.backend.auth.dto.LoginRequest;
@@ -12,48 +12,56 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class PostDetailRegressionTest {
+class UserSearchTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
 
     @Test
-    void getPostById_anonymous_returns200WithViewCount() throws Exception {
-        String token = registerAndLogin("regA", "regA@koinonia.dev", "Password1");
-        long postId = createPost(token, "Hello world");
+    void userSearch_returnsByUsernameSubstring() throws Exception {
+        String tokenA = registerAndLogin("searchAlpha", "searchAlpha@koinonia.dev", "Password1");
+        String tokenB = registerAndLogin("searchBeta", "searchBeta@koinonia.dev", "Password1");
+        long userAId = getUserId(tokenA);
 
-        // Anonymous GET must not crash and must return viewCount field
-        mockMvc.perform(get("/api/v1/posts/" + postId))
+        // B follows A — so A has 1 follower
+        mockMvc.perform(post("/api/v1/users/" + userAId + "/follow")
+                        .header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk());
+
+        // Partial match: "search" returns both users
+        mockMvc.perform(get("/api/v1/users/search?q=search"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(postId))
-                .andExpect(jsonPath("$.viewCount").value(0));
-    }
+                .andExpect(jsonPath("$.content", hasSize(2)));
 
-    @Test
-    void getPostById_duplicateView_stillReturns200() throws Exception {
-        String tokenA = registerAndLogin("regB", "regB@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("regC", "regC@koinonia.dev", "Password1");
-        long postId = createPost(tokenA, "Post for view test");
+        // Precise match: "alpha" returns only A
+        mockMvc.perform(get("/api/v1/users/search?q=alpha"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].username").value("searchAlpha"));
 
-        // First fetch — records view
-        mockMvc.perform(get("/api/v1/posts/" + postId)
+        // Ordered by follower count descending: A (1 follower) should be first
+        mockMvc.perform(get("/api/v1/users/search?q=search")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.viewCount").value(1));
+                .andExpect(jsonPath("$.content[0].username").value("searchAlpha"))
+                .andExpect(jsonPath("$.content[0].followerCount").value(1));
 
-        // Second fetch — duplicate view must not crash
-        mockMvc.perform(get("/api/v1/posts/" + postId)
-                        .header("Authorization", "Bearer " + tokenB))
+        // Anonymous search works too
+        mockMvc.perform(get("/api/v1/users/search?q=search"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.viewCount").value(1));
+                .andExpect(jsonPath("$.content[0].followedByCurrentUser").value(false));
+
+        // No results
+        mockMvc.perform(get("/api/v1/users/search?q=nonexistent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(0)));
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
@@ -79,12 +87,10 @@ class PostDetailRegressionTest {
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asText();
     }
 
-    private long createPost(String token, String content) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/posts")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("content", content, "topic", "FAITH"))))
-                .andExpect(status().isCreated())
+    private long getUserId(String token) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/v1/users/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
     }

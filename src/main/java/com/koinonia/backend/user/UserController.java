@@ -6,6 +6,7 @@ import com.koinonia.backend.user.dto.UpdateProfileRequest;
 import com.koinonia.backend.user.dto.UserProfileResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.Authentication;
@@ -34,6 +35,13 @@ public class UserController {
     public void deleteAccount(@Valid @RequestBody DeleteAccountRequest request,
                               Authentication authentication) {
         userService.deleteAccount((User) authentication.getPrincipal(), request);
+    }
+
+    @GetMapping("/search")
+    public Page<PublicUserProfileResponse> searchUsers(
+            @RequestParam String q,
+            @AuthenticationPrincipal(errorOnInvalidType = false) User currentUser) {
+        return userService.searchUsers(q, currentUser);
     }
 
     @GetMapping("/{userId}")

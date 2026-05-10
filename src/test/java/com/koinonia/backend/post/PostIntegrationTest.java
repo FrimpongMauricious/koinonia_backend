@@ -3,6 +3,7 @@ package com.koinonia.backend.post;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koinonia.backend.auth.dto.LoginRequest;
 import com.koinonia.backend.auth.dto.RegisterRequest;
+import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ class PostIntegrationTest {
 
         // 2. Create a post
         CreatePostRequest createReq = new CreatePostRequest();
+        createReq.setTopic(Topic.FAITH);
         createReq.setContent("Hello from user A");
 
         MvcResult createResult = mockMvc.perform(post("/api/v1/posts")

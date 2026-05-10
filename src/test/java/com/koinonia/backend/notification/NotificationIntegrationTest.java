@@ -3,6 +3,7 @@ package com.koinonia.backend.notification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koinonia.backend.auth.dto.LoginRequest;
 import com.koinonia.backend.auth.dto.RegisterRequest;
+import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.comment.dto.CreateCommentRequest;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,7 @@ class NotificationIntegrationTest {
 
         // 2. User A creates a post
         CreatePostRequest postReq = new CreatePostRequest();
+        postReq.setTopic(Topic.FAITH);
         postReq.setContent("Hello from user A, this is a test post");
 
         MvcResult createPostResult = mockMvc.perform(post("/api/v1/posts")

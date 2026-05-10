@@ -9,6 +9,7 @@ import com.koinonia.backend.like.PostLikeRepository;
 import com.koinonia.backend.view.PostViewRepository;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.post.dto.PostResponse;
+import com.koinonia.backend.post.dto.TopicCountResponse;
 import com.koinonia.backend.post.dto.UpdatePostRequest;
 import com.koinonia.backend.repost.RepostRepository;
 import com.koinonia.backend.user.User;
@@ -21,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,15 +46,29 @@ public class PostService {
         User currentUser = (User) authentication.getPrincipal();
         Post post = Post.builder()
                 .user(currentUser)
+                .title(request.getTitle())
+                .topic(request.getTopic())
                 .content(request.getContent())
                 .build();
         return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, false, 0L);
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponse> getFeed(Pageable pageable) {
-        Page<Post> page = postRepository.findAll(pageable);
+    public Page<PostResponse> getFeed(Pageable pageable, Topic topic) {
+        Page<Post> page = topic != null
+                ? postRepository.findByTopic(topic, pageable)
+                : postRepository.findAll(pageable);
         return new PageImpl<>(toResponses(page.getContent()), pageable, page.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TopicCountResponse> getTopicCounts() {
+        Map<Topic, Long> counts = postRepository.countByTopic().stream()
+                .collect(Collectors.toMap(r -> (Topic) r[0], r -> (Long) r[1]));
+        return Arrays.stream(Topic.values())
+                .map(t -> TopicCountResponse.builder().topic(t).postCount(counts.getOrDefault(t, 0L)).build())
+                .sorted(Comparator.comparingLong(TopicCountResponse::getPostCount).reversed())
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -74,6 +91,8 @@ public class PostService {
         if (!post.getUser().getId().equals(currentUser.getId())) {
             throw new ForbiddenException("You are not the author of this post");
         }
+        post.setTitle(request.getTitle());
+        post.setTopic(request.getTopic());
         post.setContent(request.getContent());
         // saveAndFlush triggers @PreUpdate so updatedAt is fresh in the response
         return toResponse(postRepository.saveAndFlush(post));

@@ -3,6 +3,7 @@ package com.koinonia.backend.repost;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koinonia.backend.auth.dto.LoginRequest;
 import com.koinonia.backend.auth.dto.RegisterRequest;
+import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +128,7 @@ class RepostFavoriteIntegrationTest {
 
     private long createPost(String token, String content) throws Exception {
         CreatePostRequest req = new CreatePostRequest();
+        req.setTopic(Topic.FAITH);
         req.setContent(content);
 
         MvcResult result = mockMvc.perform(post("/api/v1/posts")

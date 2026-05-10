@@ -20,40 +20,45 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class PostDetailRegressionTest {
+class TopicFeedTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
 
     @Test
-    void getPostById_anonymous_returns200WithViewCount() throws Exception {
-        String token = registerAndLogin("regA", "regA@koinonia.dev", "Password1");
-        long postId = createPost(token, "Hello world");
+    void topicFilteringAndCounts() throws Exception {
+        String token = registerAndLogin("topicUser", "topicUser@koinonia.dev", "Password1");
 
-        // Anonymous GET must not crash and must return viewCount field
-        mockMvc.perform(get("/api/v1/posts/" + postId))
+        createPost(token, "Faith post 1", "FAITH");
+        createPost(token, "Faith post 2", "FAITH");
+        createPost(token, "Prayer post", "PRAYER");
+
+        // Filtered feed: FAITH → 2 posts
+        mockMvc.perform(get("/api/v1/posts?topic=FAITH"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(postId))
-                .andExpect(jsonPath("$.viewCount").value(0));
-    }
+                .andExpect(jsonPath("$.totalElements").value(2));
 
-    @Test
-    void getPostById_duplicateView_stillReturns200() throws Exception {
-        String tokenA = registerAndLogin("regB", "regB@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("regC", "regC@koinonia.dev", "Password1");
-        long postId = createPost(tokenA, "Post for view test");
-
-        // First fetch — records view
-        mockMvc.perform(get("/api/v1/posts/" + postId)
-                        .header("Authorization", "Bearer " + tokenB))
+        // Filtered feed: PRAYER → 1 post
+        mockMvc.perform(get("/api/v1/posts?topic=PRAYER"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.viewCount").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1));
 
-        // Second fetch — duplicate view must not crash
-        mockMvc.perform(get("/api/v1/posts/" + postId)
-                        .header("Authorization", "Bearer " + tokenB))
+        // Unfiltered feed → 3 posts
+        mockMvc.perform(get("/api/v1/posts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.viewCount").value(1));
+                .andExpect(jsonPath("$.totalElements").value(3));
+
+        // Topics endpoint → FAITH is the top topic with count 2
+        mockMvc.perform(get("/api/v1/posts/topics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].topic").value("FAITH"))
+                .andExpect(jsonPath("$[0].postCount").value(2));
+
+        // Each post in the feed carries topic and content
+        mockMvc.perform(get("/api/v1/posts?topic=PRAYER"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].topic").value("PRAYER"))
+                .andExpect(jsonPath("$.content[0].content").value("Prayer post"));
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
@@ -79,13 +84,11 @@ class PostDetailRegressionTest {
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asText();
     }
 
-    private long createPost(String token, String content) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/posts")
+    private void createPost(String token, String content, String topic) throws Exception {
+        mockMvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("content", content, "topic", "FAITH"))))
-                .andExpect(status().isCreated())
-                .andReturn();
-        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+                        .content(objectMapper.writeValueAsString(Map.of("content", content, "topic", topic))))
+                .andExpect(status().isCreated());
     }
 }

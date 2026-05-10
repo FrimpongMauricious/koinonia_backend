@@ -23,6 +23,13 @@ public class Post {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(length = 100)
+    private String title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private Topic topic;
+
     @Column(nullable = false, length = 1000)
     private String content;
 

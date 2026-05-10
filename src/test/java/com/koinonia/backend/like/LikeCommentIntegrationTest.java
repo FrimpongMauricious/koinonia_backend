@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koinonia.backend.auth.dto.LoginRequest;
 import com.koinonia.backend.auth.dto.RegisterRequest;
 import com.koinonia.backend.comment.dto.CreateCommentRequest;
+import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ class LikeCommentIntegrationTest {
 
         // 3. User A creates a post
         CreatePostRequest postReq = new CreatePostRequest();
+        postReq.setTopic(Topic.FAITH);
         postReq.setContent("A post by user A");
 
         MvcResult postResult = mockMvc.perform(post("/api/v1/posts")

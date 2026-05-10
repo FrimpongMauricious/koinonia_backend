@@ -1,6 +1,7 @@
 package com.koinonia.backend.post.dto;
 
 import com.koinonia.backend.post.Post;
+import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.user.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +13,8 @@ import java.time.LocalDateTime;
 public class PostResponse {
 
     private Long id;
+    private String title;
+    private Topic topic;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -46,6 +49,8 @@ public class PostResponse {
         User u = post.getUser();
         return PostResponse.builder()
                 .id(post.getId())
+                .title(post.getTitle())
+                .topic(post.getTopic())
                 .content(post.getContent())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())

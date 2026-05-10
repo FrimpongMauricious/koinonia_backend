@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koinonia.backend.auth.dto.LoginRequest;
 import com.koinonia.backend.auth.dto.RegisterRequest;
 import com.koinonia.backend.comment.dto.CreateCommentRequest;
+import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.user.dto.DeleteAccountRequest;
 import com.koinonia.backend.user.dto.UpdateProfileRequest;
@@ -152,6 +153,7 @@ class RegressionSmokeTest {
 
     private long createPost(String token, String content) throws Exception {
         CreatePostRequest req = new CreatePostRequest();
+        req.setTopic(Topic.FAITH);
         req.setContent(content);
 
         MvcResult result = mockMvc.perform(post("/api/v1/posts")

@@ -126,7 +126,7 @@ class AuthorFollowEnrichmentTest {
         MvcResult result = mockMvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("content", content))))
+                        .content(objectMapper.writeValueAsString(Map.of("content", content, "topic", "FAITH"))))
                 .andExpect(status().isCreated())
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
