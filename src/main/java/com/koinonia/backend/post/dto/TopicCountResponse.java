@@ -8,5 +8,6 @@ import lombok.Getter;
 @Builder
 public class TopicCountResponse {
     private Topic topic;
+    private String displayName;
     private long postCount;
 }

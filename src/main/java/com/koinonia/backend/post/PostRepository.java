@@ -18,6 +18,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p JOIN FETCH p.user WHERE p.id = :id")
     Optional<Post> findByIdWithUser(@Param("id") Long id);
 
-    @Query("SELECT p.topic, COUNT(p) FROM Post p GROUP BY p.topic")
-    List<Object[]> countByTopic();
+    @Query("SELECT p.topic, COUNT(p) FROM Post p WHERE p.topic != :general GROUP BY p.topic")
+    List<Object[]> countByTopicExcludingGeneral(@Param("general") Topic general);
 }

@@ -11,6 +11,7 @@ import com.koinonia.backend.view.PostViewRepository;
 import com.koinonia.backend.post.dto.CreatePostRequest;
 import com.koinonia.backend.post.dto.PostResponse;
 import com.koinonia.backend.post.dto.TopicCountResponse;
+import com.koinonia.backend.post.dto.TopicsResponse;
 import com.koinonia.backend.post.dto.UpdatePostRequest;
 import com.koinonia.backend.repost.RepostRepository;
 import com.koinonia.backend.user.User;
@@ -23,8 +24,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,13 +65,20 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<TopicCountResponse> getTopicCounts() {
-        Map<Topic, Long> counts = postRepository.countByTopic().stream()
+    public TopicsResponse getTopicCounts() {
+        Map<Topic, Long> counts = postRepository.countByTopicExcludingGeneral(Topic.GENERAL).stream()
                 .collect(Collectors.toMap(r -> (Topic) r[0], r -> (Long) r[1]));
-        return Arrays.stream(Topic.values())
-                .map(t -> TopicCountResponse.builder().topic(t).postCount(counts.getOrDefault(t, 0L)).build())
-                .sorted(Comparator.comparingLong(TopicCountResponse::getPostCount).reversed())
+        List<TopicCountResponse> entries = List.of(
+                Topic.FAITH, Topic.PRAYER, Topic.WORSHIP, Topic.SCRIPTURE,
+                Topic.COMMUNITY, Topic.TESTIMONY, Topic.ENCOURAGEMENT, Topic.DOCTRINE
+        ).stream()
+                .map(t -> TopicCountResponse.builder()
+                        .topic(t)
+                        .displayName(t.getDisplayName())
+                        .postCount(counts.getOrDefault(t, 0L))
+                        .build())
                 .toList();
+        return new TopicsResponse(entries);
     }
 
     @Transactional(readOnly = true)
