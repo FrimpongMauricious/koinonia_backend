@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,4 +21,9 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
     @Query("SELECT f.post.id FROM Favorite f WHERE f.user.id = :userId AND f.post.id IN :postIds")
     Set<Long> findFavoritedPostIds(@Param("userId") Long userId, @Param("postIds") List<Long> postIds);
+
+    long countByPostId(Long postId);
+
+    @Query("SELECT f.post.id, COUNT(f) FROM Favorite f WHERE f.post.id IN :postIds GROUP BY f.post.id")
+    List<Object[]> countByPostIdIn(@Param("postIds") Collection<Long> postIds);
 }

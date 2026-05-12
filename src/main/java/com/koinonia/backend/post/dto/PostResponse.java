@@ -25,6 +25,7 @@ public class PostResponse {
     private long repostCount;
     private boolean repostedByCurrentUser;
     private boolean favoritedByCurrentUser;
+    private long favoriteCount;
     private long viewCount;
 
     @Getter
@@ -44,6 +45,7 @@ public class PostResponse {
                                     long repostCount,
                                     boolean repostedByCurrentUser,
                                     boolean favoritedByCurrentUser,
+                                    long favoriteCount,
                                     boolean authorFollowedByCurrentUser,
                                     long viewCount) {
         User u = post.getUser();
@@ -67,6 +69,7 @@ public class PostResponse {
                 .repostCount(repostCount)
                 .repostedByCurrentUser(repostedByCurrentUser)
                 .favoritedByCurrentUser(favoritedByCurrentUser)
+                .favoriteCount(favoriteCount)
                 .viewCount(viewCount)
                 .build();
     }

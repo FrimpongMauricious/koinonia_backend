@@ -53,7 +53,7 @@ public class PostService {
                 .topic(request.getTopic())
                 .content(request.getContent())
                 .build();
-        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, false, 0L);
+        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, 0L, false, 0L);
     }
 
     @Transactional(readOnly = true)
@@ -178,6 +178,9 @@ public class PostService {
             followedAuthorIds = Set.of();
         }
 
+        Map<Long, Long> favoriteCounts = favoriteRepository.countByPostIdIn(ids).stream()
+                .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+
         Map<Long, Long> viewCounts = postViewRepository.countByPostIdIn(ids).stream()
                 .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
 
@@ -189,6 +192,7 @@ public class PostService {
                         repostCounts.getOrDefault(p.getId(), 0L),
                         repostedIds.contains(p.getId()),
                         favoritedIds.contains(p.getId()),
+                        favoriteCounts.getOrDefault(p.getId(), 0L),
                         followedAuthorIds.contains(p.getUser().getId()),
                         viewCounts.getOrDefault(p.getId(), 0L)))
                 .toList();

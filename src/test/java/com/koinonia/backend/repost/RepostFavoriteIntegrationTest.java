@@ -64,35 +64,46 @@ class RepostFavoriteIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.repostCount").value(0));
 
-        // 7. B favorites the post → favoritedByCurrentUser=true
+        // 7. B favorites the post → favoritedByCurrentUser=true, favoriteCount=1
         mockMvc.perform(post("/api/v1/posts/" + postId + "/favorite")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.favoritedByCurrentUser").value(true));
+                .andExpect(jsonPath("$.favoritedByCurrentUser").value(true))
+                .andExpect(jsonPath("$.favoriteCount").value(1));
 
-        // 8. B favorites again (idempotent) → still favoritedByCurrentUser=true
+        // 8. B favorites again (idempotent) → still favoritedByCurrentUser=true, favoriteCount=1
         mockMvc.perform(post("/api/v1/posts/" + postId + "/favorite")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.favoritedByCurrentUser").value(true));
+                .andExpect(jsonPath("$.favoritedByCurrentUser").value(true))
+                .andExpect(jsonPath("$.favoriteCount").value(1));
 
-        // 9. GET /users/me/favorites as B → 1 item total
+        // 9. GET /users/me/favorites as B → 1 item total, favoriteCount present in feed items
         mockMvc.perform(get("/api/v1/users/me/favorites")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].favoriteCount").value(1));
 
-        // 10. B un-favorites → favoritedByCurrentUser=false
+        // 10. GET feed → favoriteCount populated
+        mockMvc.perform(get("/api/v1/posts")
+                        .header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].favoriteCount").value(1));
+
+        // 11. B un-favorites → favoritedByCurrentUser=false, favoriteCount=0
         mockMvc.perform(delete("/api/v1/posts/" + postId + "/favorite")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.favoritedByCurrentUser").value(false));
+                .andExpect(jsonPath("$.favoritedByCurrentUser").value(false))
+                .andExpect(jsonPath("$.favoriteCount").value(0));
 
-        // 11. B un-favorites again (idempotent) → no error, favoritedByCurrentUser=false
+        // 12. B un-favorites again (idempotent) → no error, favoriteCount stays 0
         mockMvc.perform(delete("/api/v1/posts/" + postId + "/favorite")
                         .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.favoritedByCurrentUser").value(false));
+                .andExpect(jsonPath("$.favoritedByCurrentUser").value(false))
+                .andExpect(jsonPath("$.favoriteCount").value(0));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
