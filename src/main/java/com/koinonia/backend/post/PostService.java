@@ -4,6 +4,7 @@ import com.koinonia.backend.comment.CommentRepository;
 import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.streak.UserStreakService;
 import com.koinonia.backend.favorite.FavoriteRepository;
 import com.koinonia.backend.follow.FollowRepository;
 import com.koinonia.backend.like.PostLikeRepository;
@@ -40,6 +41,7 @@ public class PostService {
     private final FavoriteRepository favoriteRepository;
     private final FollowRepository followRepository;
     private final PostViewRepository postViewRepository;
+    private final UserStreakService userStreakService;
 
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Authentication authentication) {
@@ -53,7 +55,9 @@ public class PostService {
                 .topic(request.getTopic())
                 .content(request.getContent())
                 .build();
-        return PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, 0L, false, 0L);
+        PostResponse response = PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, 0L, false, 0L);
+        userStreakService.recordActivity(currentUser.getId());
+        return response;
     }
 
     @Transactional(readOnly = true)

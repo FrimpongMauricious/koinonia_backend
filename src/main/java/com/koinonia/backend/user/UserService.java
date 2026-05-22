@@ -4,6 +4,8 @@ import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.UserNotFoundException;
 import com.koinonia.backend.follow.FollowRepository;
 import com.koinonia.backend.like.PostLikeRepository;
+import com.koinonia.backend.streak.UserStreak;
+import com.koinonia.backend.streak.UserStreakRepository;
 import com.koinonia.backend.user.dto.DeleteAccountRequest;
 import com.koinonia.backend.user.dto.PublicUserProfileResponse;
 import com.koinonia.backend.user.dto.UpdateProfileRequest;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final PostLikeRepository postLikeRepository;
+    private final UserStreakRepository userStreakRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -36,7 +40,9 @@ public class UserService {
         long followerCount  = followRepository.countByFollowingId(currentUser.getId());
         long followingCount = followRepository.countByFollowerId(currentUser.getId());
         long totalLikes     = postLikeRepository.countByPostAuthorId(currentUser.getId());
-        return UserProfileResponse.from(currentUser, followerCount, followingCount, false, totalLikes);
+        UserStreak streak   = userStreakRepository.findById(currentUser.getId()).orElse(emptyStreak());
+        return UserProfileResponse.from(currentUser, followerCount, followingCount, false, totalLikes,
+                streak.getCurrentStreak(), streak.getLongestStreak());
     }
 
     @Transactional(readOnly = true)
@@ -47,12 +53,14 @@ public class UserService {
         long followerCount  = followRepository.countByFollowingId(userId);
         long followingCount = followRepository.countByFollowerId(userId);
         long totalLikes     = postLikeRepository.countByPostAuthorId(userId);
+        UserStreak streak   = userStreakRepository.findById(userId).orElse(emptyStreak());
 
         boolean followedByCurrentUser = currentUser != null
                 && !currentUser.getId().equals(userId)
                 && followRepository.existsByFollowerIdAndFollowingId(currentUser.getId(), userId);
 
-        return PublicUserProfileResponse.from(target, followerCount, followingCount, followedByCurrentUser, totalLikes);
+        return PublicUserProfileResponse.from(target, followerCount, followingCount, followedByCurrentUser,
+                totalLikes, streak.getCurrentStreak(), streak.getLongestStreak());
     }
 
     @Transactional
@@ -72,7 +80,9 @@ public class UserService {
         long followerCount  = followRepository.countByFollowingId(saved.getId());
         long followingCount = followRepository.countByFollowerId(saved.getId());
         long totalLikes     = postLikeRepository.countByPostAuthorId(saved.getId());
-        return UserProfileResponse.from(saved, followerCount, followingCount, false, totalLikes);
+        UserStreak streak   = userStreakRepository.findById(saved.getId()).orElse(emptyStreak());
+        return UserProfileResponse.from(saved, followerCount, followingCount, false, totalLikes,
+                streak.getCurrentStreak(), streak.getLongestStreak());
     }
 
     @Transactional(readOnly = true)
@@ -92,13 +102,21 @@ public class UserService {
         Set<Long> followedIds = currentUser != null
                 ? followRepository.findFollowedAuthorIds(currentUser.getId(), new HashSet<>(userIds))
                 : Set.of();
+        Map<Long, UserStreak> streaks = StreamSupport
+                .stream(userStreakRepository.findAllById(userIds).spliterator(), false)
+                .collect(Collectors.toMap(UserStreak::getUserId, s -> s));
 
         List<PublicUserProfileResponse> responses = users.stream()
-                .map(u -> PublicUserProfileResponse.from(u,
-                        followerCounts.getOrDefault(u.getId(), 0L),
-                        followingCounts.getOrDefault(u.getId(), 0L),
-                        followedIds.contains(u.getId()),
-                        likeCounts.getOrDefault(u.getId(), 0L)))
+                .map(u -> {
+                    UserStreak s = streaks.getOrDefault(u.getId(), emptyStreak());
+                    return PublicUserProfileResponse.from(u,
+                            followerCounts.getOrDefault(u.getId(), 0L),
+                            followingCounts.getOrDefault(u.getId(), 0L),
+                            followedIds.contains(u.getId()),
+                            likeCounts.getOrDefault(u.getId(), 0L),
+                            s.getCurrentStreak(),
+                            s.getLongestStreak());
+                })
                 .toList();
 
         return new PageImpl<>(responses, PageRequest.of(0, 20), userPage.getTotalElements());
@@ -110,5 +128,12 @@ public class UserService {
             throw new BadRequestException("Incorrect password");
         }
         userRepository.delete(currentUser);
+    }
+
+    private static UserStreak emptyStreak() {
+        UserStreak s = new UserStreak();
+        s.setCurrentStreak(0);
+        s.setLongestStreak(0);
+        return s;
     }
 }

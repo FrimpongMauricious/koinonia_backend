@@ -20,12 +20,16 @@ public class UserProfileResponse {
     private long followingCount;
     private boolean followedByCurrentUser;
     private long totalLikes;
+    private int currentStreak;
+    private int longestStreak;
 
     public static UserProfileResponse from(User user,
                                            long followerCount,
                                            long followingCount,
                                            boolean followedByCurrentUser,
-                                           long totalLikes) {
+                                           long totalLikes,
+                                           int currentStreak,
+                                           int longestStreak) {
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -38,6 +42,8 @@ public class UserProfileResponse {
                 .followingCount(followingCount)
                 .followedByCurrentUser(followedByCurrentUser)
                 .totalLikes(totalLikes)
+                .currentStreak(currentStreak)
+                .longestStreak(longestStreak)
                 .build();
     }
 }
