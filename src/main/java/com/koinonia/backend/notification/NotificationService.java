@@ -103,6 +103,59 @@ public class NotificationService {
     }
 
     /**
+     * Emit a COMMENT_LIKE notification when a user likes someone else's comment.
+     * Deduplicates within 24 hours (keyed by comment).
+     */
+    @Transactional
+    public void emitCommentLike(User actor, User recipient, Post post, Comment comment) {
+        if (actor.getId().equals(recipient.getId())) {
+            return;
+        }
+
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(24);
+        if (notificationRepository.existsRecentNotificationForComment(recipient, actor, comment, NotificationType.COMMENT_LIKE, cutoff)) {
+            return;
+        }
+
+        try {
+            Notification notification = Notification.builder()
+                    .recipient(recipient)
+                    .actor(actor)
+                    .type(NotificationType.COMMENT_LIKE)
+                    .post(post)
+                    .comment(comment)
+                    .build();
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            log.warn("Failed to emit COMMENT_LIKE notification for actor {} to recipient {}: {}", actor.getId(), recipient.getId(), e.getMessage());
+        }
+    }
+
+    /**
+     * Emit a REPLY notification when a user replies to someone else's comment.
+     * Always creates; no deduplication.
+     */
+    @Transactional
+    public void emitReply(User actor, User recipient, Post post, Comment replyComment) {
+        if (actor.getId().equals(recipient.getId())) {
+            return;
+        }
+
+        try {
+            Notification notification = Notification.builder()
+                    .recipient(recipient)
+                    .actor(actor)
+                    .type(NotificationType.REPLY)
+                    .post(post)
+                    .comment(replyComment)
+                    .build();
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            log.warn("Failed to emit REPLY notification for actor {} to recipient {}: {}", actor.getId(), recipient.getId(), e.getMessage());
+        }
+    }
+
+    /**
      * Emit a FOLLOW notification when a user follows someone else.
      * Always creates; no deduplication.
      */

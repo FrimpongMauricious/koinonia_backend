@@ -35,5 +35,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             @Param("type") NotificationType type,
             @Param("cutoff") LocalDateTime cutoff
     );
+
+    @Query("SELECT COUNT(n) > 0 FROM Notification n WHERE n.recipient = :recipient AND n.actor = :actor AND n.comment = :comment AND n.type = :type AND n.createdAt > :cutoff")
+    boolean existsRecentNotificationForComment(
+            @Param("recipient") User recipient,
+            @Param("actor") User actor,
+            @Param("comment") Comment comment,
+            @Param("type") NotificationType type,
+            @Param("cutoff") LocalDateTime cutoff
+    );
 }
 

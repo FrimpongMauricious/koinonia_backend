@@ -4,5 +4,7 @@ public enum NotificationType {
     LIKE,
     COMMENT,
     REPOST,
-    FOLLOW
+    FOLLOW,
+    COMMENT_LIKE,
+    REPLY
 }

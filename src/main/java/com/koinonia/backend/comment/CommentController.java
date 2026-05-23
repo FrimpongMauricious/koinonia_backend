@@ -32,8 +32,15 @@ public class CommentController {
     @GetMapping("/posts/{postId}/comments")
     public Page<CommentResponse> getComments(
             @PathVariable Long postId,
-            @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return commentService.getComments(postId, pageable);
+    }
+
+    @GetMapping("/comments/{id}/replies")
+    public Page<CommentResponse> getReplies(
+            @PathVariable Long id,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable) {
+        return commentService.getReplies(id, pageable);
     }
 
     @PutMapping("/comments/{id}")

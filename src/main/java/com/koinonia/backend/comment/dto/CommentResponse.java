@@ -16,6 +16,10 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private AuthorDto author;
+    private Long parentId;
+    private long replyCount;
+    private long likeCount;
+    private boolean likedByCurrentUser;
 
     @Getter
     @Builder
@@ -28,10 +32,18 @@ public class CommentResponse {
     }
 
     public static CommentResponse from(Comment comment) {
-        return from(comment, false);
+        return from(comment, false, 0L, false, 0L);
     }
 
     public static CommentResponse from(Comment comment, boolean authorFollowedByCurrentUser) {
+        return from(comment, authorFollowedByCurrentUser, 0L, false, 0L);
+    }
+
+    public static CommentResponse from(Comment comment,
+                                       boolean authorFollowedByCurrentUser,
+                                       long likeCount,
+                                       boolean likedByCurrentUser,
+                                       long replyCount) {
         User u = comment.getUser();
         return CommentResponse.builder()
                 .id(comment.getId())
@@ -45,6 +57,10 @@ public class CommentResponse {
                         .profilePictureUrl(u.getProfilePictureUrl())
                         .followedByCurrentUser(authorFollowedByCurrentUser)
                         .build())
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .replyCount(replyCount)
+                .likeCount(likeCount)
+                .likedByCurrentUser(likedByCurrentUser)
                 .build();
     }
 }

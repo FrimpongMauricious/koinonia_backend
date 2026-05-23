@@ -12,4 +12,6 @@ public class CreateCommentRequest {
     @NotBlank(message = "Content must not be blank")
     @Size(max = 500, message = "Content must be 500 characters or fewer")
     private String content;
+
+    private Long parentId;
 }

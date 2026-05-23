@@ -59,7 +59,8 @@ public class SecurityConfig {
                         "/api/v1/users/*/posts",
                         "/api/v1/users/*/followers",
                         "/api/v1/users/*/following",
-                        "/api/v1/users/*/streak").permitAll()
+                        "/api/v1/users/*/streak",
+                        "/api/v1/comments/*/replies").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
