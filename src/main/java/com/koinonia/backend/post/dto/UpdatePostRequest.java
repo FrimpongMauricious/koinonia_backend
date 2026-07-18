@@ -2,7 +2,6 @@ package com.koinonia.backend.post.dto;
 
 import com.koinonia.backend.post.Topic;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +13,7 @@ public class UpdatePostRequest {
     @Size(max = 100, message = "Title must be 100 characters or fewer")
     private String title;
 
-    @NotNull(message = "Topic is required")
+    // Topic cannot be changed after posting; accepted but ignored by PostService.updatePost.
     private Topic topic;
 
     @NotBlank(message = "Content must not be blank")

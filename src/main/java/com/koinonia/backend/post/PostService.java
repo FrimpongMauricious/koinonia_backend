@@ -99,18 +99,19 @@ public class PostService {
 
     @Transactional
     public PostResponse updatePost(Long id, UpdatePostRequest request, Authentication authentication) {
-        if (request.getTopic() == Topic.GENERAL) {
-            throw new BadRequestException("Topic cannot be GENERAL");
-        }
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));
         User currentUser = (User) authentication.getPrincipal();
         if (!post.getUser().getId().equals(currentUser.getId())) {
             throw new ForbiddenException("You are not the author of this post");
         }
-        post.setTitle(request.getTitle());
-        post.setTopic(request.getTopic());
-        post.setContent(request.getContent());
+        if (request.getTitle() != null) {
+            post.setTitle(request.getTitle());
+        }
+        if (request.getContent() != null) {
+            post.setContent(request.getContent());
+        }
+        // Topic is NOT updated — it stays as-is from creation
         // saveAndFlush triggers @PreUpdate so updatedAt is fresh in the response
         return toResponse(postRepository.saveAndFlush(post));
     }
