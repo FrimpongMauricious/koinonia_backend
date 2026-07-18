@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.Map;
 
 @Getter
 @Builder
@@ -18,5 +18,5 @@ public class ApiError {
     private String error;
     private String message;
     private String path;
-    private List<String> errors;
+    private Map<String, String> errors; // field name -> error message, populated for validation failures
 }
