@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -220,5 +221,44 @@ public class NotificationService {
             notification.setReadAt(LocalDateTime.now());
             notificationRepository.save(notification);
         }
+    }
+
+    /**
+     * Delete a single notification. Throws 404 if not found, 403 if not the recipient.
+     */
+    @Transactional
+    public void deleteNotification(Long id, User currentUser) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new NotificationNotFoundException("Notification not found"));
+
+        if (!notification.getRecipient().getId().equals(currentUser.getId())) {
+            throw new ForbiddenException("You can only delete your own notifications");
+        }
+
+        notificationRepository.delete(notification);
+    }
+
+    /**
+     * Delete multiple notifications by id. Throws 403 if any belong to another user.
+     */
+    @Transactional
+    public void bulkDeleteNotifications(List<Long> ids, User currentUser) {
+        List<Notification> notifications = notificationRepository.findAllById(ids);
+
+        for (Notification notification : notifications) {
+            if (!notification.getRecipient().getId().equals(currentUser.getId())) {
+                throw new ForbiddenException("You can only delete your own notifications");
+            }
+        }
+
+        notificationRepository.deleteAll(notifications);
+    }
+
+    /**
+     * Delete every notification belonging to the current user.
+     */
+    @Transactional
+    public void clearAllNotifications(User currentUser) {
+        notificationRepository.deleteAllByRecipientId(currentUser.getId());
     }
 }

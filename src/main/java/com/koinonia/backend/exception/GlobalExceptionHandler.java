@@ -157,6 +157,18 @@ public class GlobalExceptionHandler {
                 .build());
     }
 
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotificationNotFound(NotificationNotFoundException ex,
+                                                               HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.builder()
+                .timestamp(OffsetDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build());
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiError> handleUserNotFound(UserNotFoundException ex,
                                                        HttpServletRequest request) {

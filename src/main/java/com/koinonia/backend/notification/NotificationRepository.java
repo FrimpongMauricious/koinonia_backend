@@ -44,5 +44,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             @Param("type") NotificationType type,
             @Param("cutoff") LocalDateTime cutoff
     );
+
+    void deleteAllByRecipientId(Long recipientId);
 }
 

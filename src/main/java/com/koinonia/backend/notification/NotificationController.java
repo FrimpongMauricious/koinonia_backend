@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
@@ -50,5 +52,26 @@ public class NotificationController {
         return ResponseEntity.ok(new java.util.HashMap<String, Boolean>() {{
             put("ok", true);
         }});
+    }
+
+    @DeleteMapping("/bulk")
+    public ResponseEntity<Void> bulkDeleteNotifications(@RequestBody List<Long> ids, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        notificationService.bulkDeleteNotifications(ids, currentUser);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<Void> clearAllNotifications(Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        notificationService.clearAllNotifications(currentUser);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        notificationService.deleteNotification(id, currentUser);
+        return ResponseEntity.noContent().build();
     }
 }
