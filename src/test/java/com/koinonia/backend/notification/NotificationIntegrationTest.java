@@ -30,8 +30,8 @@ class NotificationIntegrationTest {
     @Test
     void notificationLifecycle_emitAndMarkAsRead() throws Exception {
         // 1. Register and login as users A and B
-        String tokenA = registerAndLogin("userA", "userA@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("userB", "userB@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("userA", "userA@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("userB", "userB@koinonia.dev", "Password1!");
 
         // 2. User A creates a post
         CreatePostRequest postReq = new CreatePostRequest();
@@ -187,6 +187,7 @@ class NotificationIntegrationTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -194,7 +195,7 @@ class NotificationIntegrationTest {
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

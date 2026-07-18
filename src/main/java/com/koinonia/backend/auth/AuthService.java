@@ -6,6 +6,7 @@ import com.koinonia.backend.auth.dto.AuthResponse;
 import com.koinonia.backend.auth.dto.LoginRequest;
 import com.koinonia.backend.auth.dto.RegisterRequest;
 import com.koinonia.backend.auth.jwt.JwtService;
+import com.koinonia.backend.exception.ValidationException;
 import com.koinonia.backend.user.User;
 import com.koinonia.backend.user.UserRepository;
 import com.koinonia.backend.user.dto.UserResponse;
@@ -13,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,17 @@ public class AuthService {
     private final JwtService jwtService;
 
     public AuthResponse register(RegisterRequest request) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        if (userRepository.existsByUsername(request.getUsername())) {
+            errors.put("username", "This username is already taken");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            errors.put("email", "An account with this email already exists");
+        }
+        if (!errors.isEmpty()) {
+            throw new ValidationException("Validation failed", errors);
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -30,15 +45,17 @@ public class AuthService {
                 .displayName(request.getDisplayName())
                 .build();
 
-        // If username or email is already taken, JPA propagates a DataIntegrityViolationException
-        // which GlobalExceptionHandler maps to 409 Conflict — no try/catch needed here.
+        // Fallback for a race between the existence checks above and this insert;
+        // GlobalExceptionHandler maps the resulting DataIntegrityViolationException to 409 Conflict.
         User saved = userRepository.save(user);
 
         return new AuthResponse(jwtService.generateToken(saved), UserResponse.from(saved));
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        String identifier = request.getEmailOrUsername();
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {

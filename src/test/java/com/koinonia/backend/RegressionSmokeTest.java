@@ -33,8 +33,8 @@ class RegressionSmokeTest {
     void fullLifecycleSmoke() throws Exception {
 
         // ── 1. Register two users ─────────────────────────────────────────────
-        String tokenA = registerAndLogin("smokeA", "smokeA@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("smokeB", "smokeB@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("smokeA", "smokeA@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("smokeB", "smokeB@koinonia.dev", "Password1!");
 
         // ── 2. Update A's profile ─────────────────────────────────────────────
         UpdateProfileRequest profileUpdate = new UpdateProfileRequest();
@@ -103,7 +103,7 @@ class RegressionSmokeTest {
 
         // ── 8. Delete B's account with password confirmation ──────────────────
         DeleteAccountRequest deleteReq = new DeleteAccountRequest();
-        deleteReq.setPassword("Password1");
+        deleteReq.setPassword("Password1!");
 
         mockMvc.perform(delete("/api/v1/users/me")
                         .header("Authorization", "Bearer " + tokenB)
@@ -131,6 +131,7 @@ class RegressionSmokeTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +139,7 @@ class RegressionSmokeTest {
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

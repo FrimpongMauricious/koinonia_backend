@@ -29,8 +29,8 @@ class LikeCommentIntegrationTest {
     @Test
     void likesAndComments_fullLifecycle() throws Exception {
         // 1 & 2. Register and login two users
-        String tokenA = registerAndLogin("userAlpha", "alpha@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("userBeta",  "beta@koinonia.dev",  "Password1");
+        String tokenA = registerAndLogin("userAlpha", "alpha@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("userBeta",  "beta@koinonia.dev",  "Password1!");
 
         // 3. User A creates a post
         CreatePostRequest postReq = new CreatePostRequest();
@@ -114,6 +114,7 @@ class LikeCommentIntegrationTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +122,7 @@ class LikeCommentIntegrationTest {
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

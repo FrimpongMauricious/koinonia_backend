@@ -27,10 +27,10 @@ class ViewCountAndTotalLikesTest {
 
     @Test
     void viewCountAndTotalLikes() throws Exception {
-        String tokenA = registerAndLogin("viewA", "viewA@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("viewB", "viewB@koinonia.dev", "Password1");
-        String tokenC = registerAndLogin("viewC", "viewC@koinonia.dev", "Password1");
-        String tokenD = registerAndLogin("viewD", "viewD@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("viewA", "viewA@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("viewB", "viewB@koinonia.dev", "Password1!");
+        String tokenC = registerAndLogin("viewC", "viewC@koinonia.dev", "Password1!");
+        String tokenD = registerAndLogin("viewD", "viewD@koinonia.dev", "Password1!");
         long userAId = getUserId(tokenA);
         long userBId = getUserId(tokenB);
 
@@ -112,13 +112,14 @@ class ViewCountAndTotalLikesTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

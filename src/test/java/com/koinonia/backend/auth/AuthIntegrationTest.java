@@ -31,7 +31,7 @@ class AuthIntegrationTest {
         RegisterRequest reg = new RegisterRequest();
         reg.setUsername("testuser");
         reg.setEmail("test@koinonia.dev");
-        reg.setPassword("Password1");
+        reg.setPassword("Password1!");
         reg.setDisplayName("Test User");
 
         // 1. Register — expect 201 with a token
@@ -45,8 +45,8 @@ class AuthIntegrationTest {
 
         // 2. Login — expect 200 with a token
         LoginRequest login = new LoginRequest();
-        login.setEmail("test@koinonia.dev");
-        login.setPassword("Password1");
+        login.setEmailOrUsername("test@koinonia.dev");
+        login.setPassword("Password1!");
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,23 +68,24 @@ class AuthIntegrationTest {
     }
 
     @Test
-    void register_withDuplicateEmail_returns409() throws Exception {
+    void register_withDuplicateEmail_returns400WithFieldError() throws Exception {
         RegisterRequest reg = new RegisterRequest();
         reg.setUsername("user1");
         reg.setEmail("dup@koinonia.dev");
-        reg.setPassword("Password1");
+        reg.setPassword("Password1!");
+        reg.setDisplayName("User One");
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
                 .andExpect(status().isCreated());
 
-        // Flush so the unique constraint fires before rollback
         reg.setUsername("user2"); // different username, same email
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errors.email").value("An account with this email already exists"));
     }
 }

@@ -28,7 +28,7 @@ class PostIntegrationTest {
     @Test
     void postLifecycle_createReadAndOwnershipEnforced() throws Exception {
         // 1. Register and login as the author
-        String tokenA = registerAndLogin("authoruser", "author@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("authoruser", "author@koinonia.dev", "Password1!");
 
         // 2. Create a post
         CreatePostRequest createReq = new CreatePostRequest();
@@ -53,7 +53,7 @@ class PostIntegrationTest {
                 .andExpect(jsonPath("$.id").value(postId));
 
         // 4. Register and login as a different user
-        String tokenB = registerAndLogin("otheruser", "other@koinonia.dev", "Password1");
+        String tokenB = registerAndLogin("otheruser", "other@koinonia.dev", "Password1!");
 
         // 5. User B tries to delete user A's post — must be rejected with 403
         mockMvc.perform(delete("/api/v1/posts/" + postId)
@@ -73,6 +73,7 @@ class PostIntegrationTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,7 +81,7 @@ class PostIntegrationTest {
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

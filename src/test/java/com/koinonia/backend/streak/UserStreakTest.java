@@ -30,7 +30,7 @@ class UserStreakTest {
 
     @Test
     void streakLifecycle() throws Exception {
-        String token = registerAndLogin("streakUser", "streakUser@koinonia.dev", "Password1");
+        String token = registerAndLogin("streakUser", "streakUser@koinonia.dev", "Password1!");
         long userId = getUserId(token);
 
         // Step 2: first post → streak = 1, longestStreak = 1, lastActivityDate = today
@@ -99,13 +99,14 @@ class UserStreakTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

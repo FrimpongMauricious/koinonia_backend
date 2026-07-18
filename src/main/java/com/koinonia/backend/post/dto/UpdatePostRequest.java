@@ -16,7 +16,7 @@ public class UpdatePostRequest {
     // Topic cannot be changed after posting; accepted but ignored by PostService.updatePost.
     private Topic topic;
 
-    @NotBlank(message = "Content must not be blank")
-    @Size(max = 1000, message = "Content must be 1000 characters or fewer")
+    @NotBlank(message = "Post content is required")
+    @Size(min = 1, max = 1000, message = "Post content must be 1-1000 characters")
     private String content;
 }

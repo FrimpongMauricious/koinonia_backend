@@ -26,12 +26,12 @@ class FollowIntegrationTest {
     @Test
     void followLifecycle_allScenariosIncludingIdempotency() throws Exception {
         // 1. Register A, B, C — capture IDs from register response body
-        long userAId = registerAndGetId("userAlpha", "alpha@koinonia.dev", "Password1");
-        long userBId = registerAndGetId("userBeta",  "beta@koinonia.dev",  "Password1");
-        long userCId = registerAndGetId("userGamma", "gamma@koinonia.dev", "Password1");
+        long userAId = registerAndGetId("userAlpha", "alpha@koinonia.dev", "Password1!");
+        long userBId = registerAndGetId("userBeta",  "beta@koinonia.dev",  "Password1!");
+        long userCId = registerAndGetId("userGamma", "gamma@koinonia.dev", "Password1!");
 
-        String tokenA = login("alpha@koinonia.dev", "Password1");
-        String tokenC = login("gamma@koinonia.dev", "Password1");
+        String tokenA = login("alpha@koinonia.dev", "Password1!");
+        String tokenC = login("gamma@koinonia.dev", "Password1!");
 
         // 2. A tries to follow self → 400
         mockMvc.perform(post("/api/v1/users/" + userAId + "/follow")
@@ -101,6 +101,7 @@ class FollowIntegrationTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +115,7 @@ class FollowIntegrationTest {
 
     private String login(String email, String password) throws Exception {
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

@@ -27,7 +27,7 @@ class PostDetailRegressionTest {
 
     @Test
     void getPostById_anonymous_returns200WithViewCount() throws Exception {
-        String token = registerAndLogin("regA", "regA@koinonia.dev", "Password1");
+        String token = registerAndLogin("regA", "regA@koinonia.dev", "Password1!");
         long postId = createPost(token, "Hello world");
 
         // Anonymous GET must not crash and must return viewCount field
@@ -39,8 +39,8 @@ class PostDetailRegressionTest {
 
     @Test
     void getPostById_duplicateView_stillReturns200() throws Exception {
-        String tokenA = registerAndLogin("regB", "regB@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("regC", "regC@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("regB", "regB@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("regC", "regC@koinonia.dev", "Password1!");
         long postId = createPost(tokenA, "Post for view test");
 
         // First fetch — records view
@@ -63,13 +63,14 @@ class PostDetailRegressionTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

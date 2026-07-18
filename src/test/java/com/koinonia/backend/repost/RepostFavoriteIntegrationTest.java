@@ -28,8 +28,8 @@ class RepostFavoriteIntegrationTest {
     @Test
     void repostAndFavoriteLifecycle() throws Exception {
         // 1. Register A and B; A creates a post
-        String tokenA = registerAndLogin("repostUserA", "repostA@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("repostUserB", "repostB@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("repostUserA", "repostA@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("repostUserB", "repostB@koinonia.dev", "Password1!");
         long postId   = createPost(tokenA, "Hello from A");
 
         // 2. A tries to repost own post → 400
@@ -113,6 +113,7 @@ class RepostFavoriteIntegrationTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +125,7 @@ class RepostFavoriteIntegrationTest {
 
     private String login(String email, String password) throws Exception {
         LoginRequest req = new LoginRequest();
-        req.setEmail(email);
+        req.setEmailOrUsername(email);
         req.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

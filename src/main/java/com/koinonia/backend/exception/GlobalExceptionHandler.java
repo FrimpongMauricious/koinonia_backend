@@ -37,6 +37,19 @@ public class GlobalExceptionHandler {
                 .build());
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiError> handleValidationException(ValidationException ex,
+                                                               HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(ApiError.builder()
+                .timestamp(OffsetDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Failed")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .errors(ex.getErrors())
+                .build());
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleUnreadable(HttpMessageNotReadableException ex,
                                                      HttpServletRequest request) {

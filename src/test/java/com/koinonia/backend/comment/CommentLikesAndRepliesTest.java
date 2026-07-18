@@ -28,9 +28,9 @@ class CommentLikesAndRepliesTest {
     @Test
     void commentLikesAndRepliesLifecycle() throws Exception {
         // Step 1: register users A, B, C
-        String tokenA = registerAndLogin("userA14", "userA14@koinonia.dev", "Password1");
-        String tokenB = registerAndLogin("userB14", "userB14@koinonia.dev", "Password1");
-        String tokenC = registerAndLogin("userC14", "userC14@koinonia.dev", "Password1");
+        String tokenA = registerAndLogin("userA14", "userA14@koinonia.dev", "Password1!");
+        String tokenB = registerAndLogin("userB14", "userB14@koinonia.dev", "Password1!");
+        String tokenC = registerAndLogin("userC14", "userC14@koinonia.dev", "Password1!");
 
         // Step 2: A creates post P1
         long postId = createPost(tokenA, "Post for comment-like/reply test");
@@ -124,13 +124,14 @@ class CommentLikesAndRepliesTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

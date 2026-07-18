@@ -26,10 +26,10 @@ class UserProfileIntegrationTest {
     @Test
     void publicProfileLookup() throws Exception {
         // 1. Register A and B
-        registerAndGetId("profileA", "profileA@koinonia.dev", "Password1");
-        long userBId = registerAndGetId("profileB", "profileB@koinonia.dev", "Password1");
-        String tokenA = login("profileA@koinonia.dev", "Password1");
-        String tokenB = login("profileB@koinonia.dev", "Password1");
+        registerAndGetId("profileA", "profileA@koinonia.dev", "Password1!");
+        long userBId = registerAndGetId("profileB", "profileB@koinonia.dev", "Password1!");
+        String tokenA = login("profileA@koinonia.dev", "Password1!");
+        String tokenB = login("profileB@koinonia.dev", "Password1!");
 
         // 2. A follows B
         mockMvc.perform(post("/api/v1/users/" + userBId + "/follow")
@@ -76,6 +76,7 @@ class UserProfileIntegrationTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,7 +90,7 @@ class UserProfileIntegrationTest {
 
     private String login(String email, String password) throws Exception {
         LoginRequest req = new LoginRequest();
-        req.setEmail(email);
+        req.setEmailOrUsername(email);
         req.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")

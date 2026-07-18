@@ -28,7 +28,7 @@ class TopicFeedTest {
 
     @Test
     void topicFilteringAndCounts() throws Exception {
-        String token = registerAndLogin("topicUser", "topicUser@koinonia.dev", "Password1");
+        String token = registerAndLogin("topicUser", "topicUser@koinonia.dev", "Password1!");
 
         createPost(token, "Faith post 1", "FAITH");
         createPost(token, "Faith post 2", "FAITH");
@@ -74,7 +74,7 @@ class TopicFeedTest {
 
     @Test
     void generalTopicRejectedOnCreate() throws Exception {
-        String token = registerAndLogin("genUser", "genUser@koinonia.dev", "Password1");
+        String token = registerAndLogin("genUser", "genUser@koinonia.dev", "Password1!");
 
         mockMvc.perform(post("/api/v1/posts")
                         .header("Authorization", "Bearer " + token)
@@ -91,13 +91,14 @@ class TopicFeedTest {
         reg.setUsername(username);
         reg.setEmail(email);
         reg.setPassword(password);
+        reg.setDisplayName(username);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reg)))
                 .andExpect(status().isCreated());
 
         LoginRequest login = new LoginRequest();
-        login.setEmail(email);
+        login.setEmailOrUsername(email);
         login.setPassword(password);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
