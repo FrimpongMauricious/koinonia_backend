@@ -17,6 +17,7 @@ public class PostResponse {
     private String title;
     private Topic topic;
     private String content;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private AuthorDto author;
@@ -56,6 +57,7 @@ public class PostResponse {
                 .title(post.getTitle())
                 .topic(post.getTopic())
                 .content(post.getContent())
+                .imageUrl(post.getImageUrl())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .author(AuthorDto.builder()

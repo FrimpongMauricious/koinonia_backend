@@ -20,4 +20,7 @@ public class CreatePostRequest {
     @NotBlank(message = "Post content is required")
     @Size(min = 1, max = 1000, message = "Post content must be 1-1000 characters")
     private String content;
+
+    @Size(max = 500, message = "Image URL is too long")
+    private String imageUrl;
 }

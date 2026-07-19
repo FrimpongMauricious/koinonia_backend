@@ -4,6 +4,7 @@ import com.koinonia.backend.comment.CommentRepository;
 import com.koinonia.backend.exception.BadRequestException;
 import com.koinonia.backend.exception.ForbiddenException;
 import com.koinonia.backend.exception.PostNotFoundException;
+import com.koinonia.backend.exception.ValidationException;
 import com.koinonia.backend.streak.UserStreakService;
 import com.koinonia.backend.favorite.FavoriteRepository;
 import com.koinonia.backend.follow.FollowRepository;
@@ -54,6 +55,7 @@ public class PostService {
                 .title(request.getTitle())
                 .topic(request.getTopic())
                 .content(request.getContent())
+                .imageUrl(validateAndNormalizeImageUrl(request.getImageUrl()))
                 .build();
         PostResponse response = PostResponse.from(postRepository.save(post), 0L, 0L, false, 0L, false, false, 0L, false, 0L);
         userStreakService.recordActivity(currentUser.getId());
@@ -111,6 +113,9 @@ public class PostService {
         if (request.getContent() != null) {
             post.setContent(request.getContent());
         }
+        if (request.getImageUrl() != null) {
+            post.setImageUrl(validateAndNormalizeImageUrl(request.getImageUrl()));
+        }
         // Topic is NOT updated — it stays as-is from creation
         // saveAndFlush triggers @PreUpdate so updatedAt is fresh in the response
         return toResponse(postRepository.saveAndFlush(post));
@@ -125,6 +130,16 @@ public class PostService {
             throw new ForbiddenException("You are not the author of this post");
         }
         postRepository.delete(post);
+    }
+
+    private String validateAndNormalizeImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        if (!imageUrl.startsWith("http")) {
+            throw new ValidationException("Validation failed", Map.of("imageUrl", "Image URL must be valid"));
+        }
+        return imageUrl;
     }
 
     // ── public enrichment API (used by RepostService and FavoriteService) ────────
