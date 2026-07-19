@@ -18,6 +18,7 @@ import com.koinonia.backend.post.dto.UpdatePostRequest;
 import com.koinonia.backend.repost.RepostRepository;
 import com.koinonia.backend.user.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -46,6 +48,8 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Authentication authentication) {
+        // TEMP diagnostic for image-only post rejection bug — remove once root cause is found.
+        log.info("createPost - topic: {}, title: {}, hasImage: {}", request.getTopic(), request.getTitle(), request.getImageUrl() != null);
         if (request.getTopic() == Topic.GENERAL) {
             throw new BadRequestException("Topic cannot be GENERAL");
         }
@@ -113,6 +117,8 @@ public class PostService {
         if (request.getContent() != null) {
             post.setContent(request.getContent());
         }
+        // Contract: imageUrl omitted/null = no change; imageUrl "" = explicitly clear the image.
+        // validateAndNormalizeImageUrl() already maps blank -> null, so "" clears post.imageUrl below.
         if (request.getImageUrl() != null) {
             post.setImageUrl(validateAndNormalizeImageUrl(request.getImageUrl()));
         }
