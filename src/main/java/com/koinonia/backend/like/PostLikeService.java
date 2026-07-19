@@ -5,6 +5,7 @@ import com.koinonia.backend.notification.NotificationService;
 import com.koinonia.backend.post.Post;
 import com.koinonia.backend.post.PostRepository;
 import com.koinonia.backend.user.User;
+import com.koinonia.backend.user.VerificationTierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ public class PostLikeService {
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
+    private final VerificationTierService verificationTierService;
 
     @Transactional
     public LikeResponse likePost(Long postId, User currentUser) {
@@ -28,16 +30,17 @@ public class PostLikeService {
                     .build());
             notificationService.emitLike(currentUser, post.getUser(), post);
         }
+        verificationTierService.recomputeAndSave(post.getUser());
         return new LikeResponse(postLikeRepository.countByPostId(postId), true);
     }
 
     @Transactional
     public LikeResponse unlikePost(Long postId, User currentUser) {
-        if (!postRepository.existsById(postId)) {
-            throw new PostNotFoundException(postId);
-        }
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
         postLikeRepository.findByUserIdAndPostId(currentUser.getId(), postId)
                 .ifPresent(postLikeRepository::delete);
+        verificationTierService.recomputeAndSave(post.getUser());
         return new LikeResponse(postLikeRepository.countByPostId(postId), false);
     }
 }

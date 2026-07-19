@@ -3,6 +3,7 @@ package com.koinonia.backend.post.dto;
 import com.koinonia.backend.post.Post;
 import com.koinonia.backend.post.Topic;
 import com.koinonia.backend.user.User;
+import com.koinonia.backend.user.VerificationTier;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -36,6 +37,7 @@ public class PostResponse {
         private String displayName;
         private String profilePictureUrl;
         private boolean followedByCurrentUser;
+        private VerificationTier verificationTier;
     }
 
     public static PostResponse from(Post post,
@@ -62,6 +64,7 @@ public class PostResponse {
                         .displayName(u.getDisplayName())
                         .profilePictureUrl(u.getProfilePictureUrl())
                         .followedByCurrentUser(authorFollowedByCurrentUser)
+                        .verificationTier(u.getVerificationTier())
                         .build())
                 .likeCount(likeCount)
                 .commentCount(commentCount)

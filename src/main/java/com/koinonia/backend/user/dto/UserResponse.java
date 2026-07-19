@@ -2,6 +2,7 @@
 package com.koinonia.backend.user.dto;
 
 import com.koinonia.backend.user.User;
+import com.koinonia.backend.user.VerificationTier;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,6 +18,7 @@ public class UserResponse {
     private String bio;
     private String profilePictureUrl;
     private LocalDateTime createdAt;
+    private VerificationTier verificationTier;
 
     public static UserResponse from(User user) {
         return UserResponse.builder()
@@ -27,6 +29,7 @@ public class UserResponse {
                 .bio(user.getBio())
                 .profilePictureUrl(user.getProfilePictureUrl())
                 .createdAt(user.getCreatedAt())
+                .verificationTier(user.getVerificationTier())
                 .build();
     }
 }

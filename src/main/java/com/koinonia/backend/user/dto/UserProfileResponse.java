@@ -1,6 +1,7 @@
 package com.koinonia.backend.user.dto;
 
 import com.koinonia.backend.user.User;
+import com.koinonia.backend.user.VerificationTier;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,6 +23,7 @@ public class UserProfileResponse {
     private long totalLikes;
     private int currentStreak;
     private int longestStreak;
+    private VerificationTier verificationTier;
 
     public static UserProfileResponse from(User user,
                                            long followerCount,
@@ -44,6 +46,7 @@ public class UserProfileResponse {
                 .totalLikes(totalLikes)
                 .currentStreak(currentStreak)
                 .longestStreak(longestStreak)
+                .verificationTier(user.getVerificationTier())
                 .build();
     }
 }

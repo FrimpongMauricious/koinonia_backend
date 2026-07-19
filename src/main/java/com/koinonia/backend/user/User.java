@@ -49,6 +49,11 @@ public class User implements UserDetails {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_tier", nullable = false)
+    @Builder.Default
+    private VerificationTier verificationTier = VerificationTier.NONE;
+
     @PrePersist
     private void onCreate() {
         LocalDateTime now = LocalDateTime.now();

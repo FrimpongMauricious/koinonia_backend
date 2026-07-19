@@ -2,6 +2,7 @@ package com.koinonia.backend.comment.dto;
 
 import com.koinonia.backend.comment.Comment;
 import com.koinonia.backend.user.User;
+import com.koinonia.backend.user.VerificationTier;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -29,6 +30,7 @@ public class CommentResponse {
         private String displayName;
         private String profilePictureUrl;
         private boolean followedByCurrentUser;
+        private VerificationTier verificationTier;
     }
 
     public static CommentResponse from(Comment comment) {
@@ -56,6 +58,7 @@ public class CommentResponse {
                         .displayName(u.getDisplayName())
                         .profilePictureUrl(u.getProfilePictureUrl())
                         .followedByCurrentUser(authorFollowedByCurrentUser)
+                        .verificationTier(u.getVerificationTier())
                         .build())
                 .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
                 .replyCount(replyCount)

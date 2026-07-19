@@ -6,6 +6,7 @@ import com.koinonia.backend.follow.dto.FollowResponse;
 import com.koinonia.backend.notification.NotificationService;
 import com.koinonia.backend.user.User;
 import com.koinonia.backend.user.UserRepository;
+import com.koinonia.backend.user.VerificationTierService;
 import com.koinonia.backend.user.dto.PublicUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final VerificationTierService verificationTierService;
 
     @Transactional
     public FollowResponse follow(User currentUser, Long targetUserId) {
@@ -35,6 +37,7 @@ public class FollowService {
                     .build());
             notificationService.emitFollow(currentUser, target);
         }
+        verificationTierService.recomputeAndSave(target);
         return buildFollowResponse(target, currentUser);
     }
 
@@ -44,6 +47,7 @@ public class FollowService {
                 .orElseThrow(() -> new UserNotFoundException(targetUserId));
         followRepository.findByFollowerIdAndFollowingId(currentUser.getId(), targetUserId)
                 .ifPresent(followRepository::delete);
+        verificationTierService.recomputeAndSave(target);
         return buildFollowResponse(target, currentUser);
     }
 
